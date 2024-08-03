@@ -30,7 +30,7 @@ DateTime myDT;
 
 CRGB leds[TOTAL_LEDS];
 
-const int PROGMEM TopNumbers[12][MAX_HOURS_LENGTH] = {
+const uint8_t PROGMEM TopNumbers[12][MAX_HOURS_LENGTH] = {
   { 79, 80, 81, 82, 83, 84 },
   { 7, 8, 9, -1, -1, -1 },
   { 22, 23, 24, 25, -1, -1 },
@@ -45,7 +45,7 @@ const int PROGMEM TopNumbers[12][MAX_HOURS_LENGTH] = {
   { 70, 71, 72, -1, -1, -1 },
 };
 
-const int PROGMEM BottomNumbers[12][MAX_HOURS_LENGTH] = {
+const uint8_t PROGMEM BottomNumbers[12][MAX_HOURS_LENGTH] = {
   { 147, 148, 149, 150, 151, 152 },
   { 91, 92, 93, -1, -1, -1 },
   { 104, 105, 106, 107, -1, -1 },
@@ -60,7 +60,7 @@ const int PROGMEM BottomNumbers[12][MAX_HOURS_LENGTH] = {
   { 153, 154, 155, -1, -1, -1 },
 };
 
-const PROGMEM int SentenceLetters[60][MAX_SENTENCE_LENGTH] = {
+const PROGMEM uint8_t SentenceLetters[60][MAX_SENTENCE_LENGTH] = {
   { 0, 1, 2, 4, 5, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 },
   { 0, 1, 2, 4, 5, 7, 8, 9, 100, 101, 102, 103, -1, -1, -1, -1, -1, -1, -1 },
   { 0, 1, 2, 4, 5, 22, 23, 24, 25, 100, 101, 102, 103, -1, -1, -1, -1, -1, -1 },
@@ -123,7 +123,7 @@ const PROGMEM int SentenceLetters[60][MAX_SENTENCE_LENGTH] = {
   { 0, 1, 2, 4, 5, 7, 8, 9, 86, 87, 88, 89, -1, -1, -1, -1, -1, -1, -1 },
 };
 
-const PROGMEM int Hours[MAX_HOURS_STRING_LENGTH] = { 143, 144, 145 };
+const PROGMEM uint8_t Hours[MAX_HOURS_STRING_LENGTH] = { 143, 144, 145 };
 
 int lastMinutes = -1;
 bool isDebug = false;
@@ -153,8 +153,7 @@ byte getNextHour() {
   uint32_t timeStamp = DateTime(RTClib::now()).unixtime();
   timeStamp += (1 * (60 * 60));  // add 1 hours
   DateTime myDT2 = DateTime(timeStamp);
-  int nextHours = myDT2.hour() % 12;
-  return nextHours;
+  return myDT2.hour() % 12;
 }
 
 void rainbow_wave(uint8_t thisSpeed, uint8_t deltaHue) {  // The fill_rainbow call doesn't support brightness levels.
@@ -162,7 +161,7 @@ void rainbow_wave(uint8_t thisSpeed, uint8_t deltaHue) {  // The fill_rainbow ca
   fill_rainbow(leds, TOTAL_LEDS, thisHue, deltaHue);      // Use FastLED's fill_rainbow routine.
 }
 
-void turnOnLed(int ledIndex) {
+void turnOnLed(uint8_t ledIndex) {
   leds[ledIndex] = CRGB::White;
   if (isDebug) {
     Serial.print(ledIndex);
@@ -172,15 +171,14 @@ void turnOnLed(int ledIndex) {
 
 
 void loop() {
-  int currentHours = myRTC.getHour(h12Flag, pmFlag) % 12;
-  int currentMinutes = myRTC.getMinute();
+  uint8_t currentHours = myRTC.getHour(h12Flag, pmFlag) % 12;
+  uint8_t currentMinutes = myRTC.getMinute();
 
   if (isDebug) {
     Serial.print(F("current time "));
     Serial.print(currentHours);
     Serial.print(F(":"));
-    Serial.print(currentMinutes);
-    Serial.println();
+    Serial.println(currentMinutes);
   }
 
   // intro
@@ -200,8 +198,8 @@ void loop() {
     FastLED.show();   // updated leds with cleared data
 
     // first sentence (it is ...)
-    for (int i = 0; i < MAX_SENTENCE_LENGTH; i++) {
-      int letter = pgm_read_byte(&SentenceLetters[currentMinutes][i]);
+    for (uint8_t i = 0; i < MAX_SENTENCE_LENGTH; i++) {
+      uint8_t letter = pgm_read_byte(&SentenceLetters[currentMinutes][i]);
       if (letter >= 0 && letter < TOTAL_LEDS) {
         turnOnLed(letter);
       }
@@ -210,25 +208,25 @@ void loop() {
     // full hour
     if (currentMinutes == 0) {
       // the hours (on top on grid)
-      for (int i = 0; i < MAX_HOURS_LENGTH; i++) {
-        int letter = pgm_read_byte(&TopNumbers[currentHours][i]);
+      for (uint8_t i = 0; i < MAX_HOURS_LENGTH; i++) {
+        uint8_t letter = pgm_read_byte(&TopNumbers[currentHours][i]);
         if (letter >= 0 && letter < TOTAL_LEDS) {
           turnOnLed(letter);
         }
       }
       // ...hour
-      for (int i = 0; i < MAX_HOURS_STRING_LENGTH; i++) {
-        int letter = Hours[i];
+      for (uint8_t i = 0; i < MAX_HOURS_STRING_LENGTH; i++) {
+        uint8_t letter = Hours[i];
         turnOnLed(letter);
       }
 
     }
     // all other times
     else {
-      int nextHour = currentMinutes < 20 ? currentHours : getNextHour();
+      uint8_t nextHour = currentMinutes < 20 ? currentHours : getNextHour();
       // the hours (on bottom on grid)
-      for (int i = 0; i < MAX_HOURS_LENGTH; i++) {
-        int letter = pgm_read_byte(&BottomNumbers[nextHour][i]);
+      for (uint8_t i = 0; i < MAX_HOURS_LENGTH; i++) {
+        uint8_t letter = pgm_read_byte(&BottomNumbers[nextHour][i]);
         if (letter >= 0 && letter < TOTAL_LEDS) {
           turnOnLed(letter);
         }
